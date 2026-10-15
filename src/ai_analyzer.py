@@ -1,5 +1,7 @@
 import os
+import time
 from google import genai
+from google.genai.errors import APIError
 
 def analyze_to_markdown(chinese_text):
     api_key = os.environ.get("GEMINI_API_KEY")
@@ -30,9 +32,19 @@ def analyze_to_markdown(chinese_text):
 """
 
     client = genai.Client(api_key=api_key)
-    # 最新SDKで標準的に使用されるモデル名（プレフィックスなし）に変更
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=prompt
-    )
-    return response.text
+
+    # 混雑(503)対策：最大3回までリトライする処理
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model='gemini-3.8-flash',
+                contents=prompt
+            )
+            return response.text
+        except APIError as e:
+            if attempt < max_retries - 1:
+                print(f"[WARN] API呼び出し失敗 (試行 {attempt + 1}/{max_retries}): {e}. 5秒後に再試行します...")
+                time.sleep(5)
+            else:
+                raise e
