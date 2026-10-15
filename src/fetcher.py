@@ -18,7 +18,8 @@ def fetch_china_news_list(url):
     
     try:
         response = requests.get(url, headers=headers, timeout=15)
-        response.encoding = response.apparent_encoding || 'utf-8'
+        # Pythonの正しい論理演算子 'or' に修正
+        response.encoding = response.apparent_encoding or 'utf-8'
         
         if response.status_code == 200:
             soup = BeautifulSoup(response.text, 'html.parser')
@@ -51,9 +52,8 @@ def fetch_china_news_list(url):
                     except ValueError:
                         pass
                 
-                # もし行内に日付がない場合は、URL構造や親要素を探索、または直近の基準日を適用
+                # もし行内に日付がない場合は本日の日付をフォールバックとして付与
                 if not item_date_str:
-                    # 日付がどうしても取れない場合は本日の日付をフォールバックとして付与
                     item_date_str = datetime.now().strftime("%Y-%m-%d")
                 
                 full_url = urljoin(url, href)
