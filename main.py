@@ -4,10 +4,11 @@ from src.fetcher import fetch_and_clean_page
 from src.ai_analyzer import analyze_to_markdown
 
 def main():
-    # 例：中国商務部 政策発表ページ
-    target_url = "http://www.mofcom.gov.cn/article/zcfb/"
+    # 接続テスト用に、確実にアクセスできる公開ニュースサイト等のURLを指定
+    # 例としてロイターやその他の安定したWebサイト、または後ほど中国関連の別URLに変更可能
+    target_url = "https://example.com"
     
-    print("1. 中国語サイトの取得開始...")
+    print(f"1. サイトの取得開始: {target_url}")
     text = fetch_and_clean_page(target_url)
     
     if text:
@@ -23,6 +24,8 @@ def main():
             f.write(markdown_report)
             
         print(f"3. レポート保存完了: {filepath}")
+    else:
+        print("[ERROR] テキストの取得に失敗しました。")
 
 if __name__ == "__main__":
     main()
