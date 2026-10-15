@@ -30,8 +30,9 @@ def analyze_to_markdown(chinese_text):
 """
 
     client = genai.Client(api_key=api_key)
+    # 最新SDKで標準的に使用されるモデル名（プレフィックスなし）に変更
     response = client.models.generate_content(
-        model='gemini-1.5-flash',  # <-- 安定性の高いモデルに変更
+        model='gemini-2.5-flash',
         contents=prompt
     )
     return response.text
