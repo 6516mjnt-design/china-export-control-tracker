@@ -31,7 +31,7 @@ def analyze_to_markdown(chinese_text):
 
     client = genai.Client(api_key=api_key)
     response = client.models.generate_content(
-        model='gemini-3.8-flash',  # <-- ここを更新しました
+        model='gemini-1.5-flash',  # <-- 安定性の高いモデルに変更
         contents=prompt
     )
     return response.text
