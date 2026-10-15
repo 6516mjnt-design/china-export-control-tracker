@@ -5,10 +5,10 @@ from src.fetcher import fetch_china_news_list
 from src.ai_analyzer import analyze_to_markdown
 
 def main():
-    # 総合ポータルではなく、実際の個別公告・通知が時系列で並ぶ専用ページに変更
-    target_url = "https://www.mofcom.gov.cn/zwgk/gonggao/index.html"
+    # 安定稼働するJETROの中国ニュースをソースに指定
+    target_url = "https://www.jetro.go.jp/biznews/china/"
     
-    print(f"1. 個別公告一覧の取得開始: {target_url}")
+    print(f"1. JETRO中国ニュース一覧の取得開始...")
     news_items = fetch_china_news_list(target_url)
     
     if news_items:
@@ -23,8 +23,8 @@ def main():
             writer.writerows(news_items)
         print(f"   └ CSV出力完了: {csv_filepath} ({len(news_items)} 件)")
 
-        # --- 2. Markdownレポートの出力 ---
-        print("2. ニュース一覧の整形中...")
+        # --- 2. AIによるMOFCOM情報源の推論・補完レポート出力 ---
+        print("2. ニュース分析およびMOFCOM公式情報源の紐付けレポート作成中...")
         news_text_summary = "\n".join([
             f"- [{item['date']}] {item['news_title']} (URL: {item['news_url']})"
             for item in news_items[:30]
@@ -38,7 +38,7 @@ def main():
             
         print(f"3. レポート保存完了: {md_filepath}")
     else:
-        print("[ERROR] 公告一覧の取得に失敗しました。URLまたはアクセス制限をご確認ください。")
+        print("[ERROR] ニュースデータの取得に失敗しました。")
 
 if __name__ == "__main__":
     main()
