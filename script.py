@@ -45,20 +45,21 @@ DIRECT_FEEDS = [
     }
 ]
 
-# 検索キーワード設定（中国特化・輸出管理・経済安保を網羅）
+# ---------------------------------------------------------------
+# 中国・米中対立・対中輸出管理に特化した検索キーワード設定
+# ---------------------------------------------------------------
 KEYWORDS_EN = [
-    "Bureau of Industry and Security", "BIS regulation", "export controls",
-    "Entity List", "Foreign Direct Product Rule", "chip export controls",
-    "sanctions", "economic security", "CFIUS", "supply chain resilience",
-    "China export control", "MOFCOM export control", "rare earth export restriction",
-    "gallium germanium export", "China Unreliable Entity List"
+    "China export control", "MOFCOM export control", "Entity List China",
+    "chip export controls China", "rare earth export restriction",
+    "gallium germanium export", "China Unreliable Entity List",
+    "US China semiconductor restriction", "China economic security",
+    "Bureau of Industry and Security China"
 ]
 KEYWORDS_JA = [
-    "輸出管理", "BIS規制", "エンティティリスト", "経済安全保障",
-    "外国為替及び外国貿易法", "外為法", "みなし輸出", "経済安保",
-    "半導体規制", "CISTEC", "安全保障貿易情報センター", "JETRO", "OFAC", "CSIS",
-    "中国 輸出管理", "中国 商務部", "中国 稀土 規制", "ガリウム ゲルマニウム 輸出規制",
-    "デュアルユース 中国", "中国 経済安全保障", "不可靠实体清单"
+    "中国 輸出管理", "中国 商務部", "中国 エンティティリスト",
+    "中国 半導体規制", "中国 稀土 規制", "ガリウム ゲルマニウム 輸出規制",
+    "中国 経済安全保障", "米中 半導体戦争", "不可靠实体清单",
+    "中国デュアルユース", "米中 輸出管理"
 ]
 
 QUERIES = []
@@ -67,17 +68,17 @@ for kw in KEYWORDS_JA:
 for kw in KEYWORDS_EN:
     QUERIES.append((f"US: {kw}", f"{kw} {SEARCH_WINDOW}", "en-US", "US", "US:en"))
 
-# 関連判定パターン
+# ---------------------------------------------------------------
+# 中国関連または強力な輸出管理キーワードが必須の関連判定パターン
+# ---------------------------------------------------------------
 SECURITY_PATTERN = re.compile(
-    r"(輸出管理|BIS|Bureau of Industry and Security|Entity List|"
-    r"エンティティリスト|外国為替|外為法|経済安全保障|経済安保|制裁|"
-    r"Sanctions|Export Control|CFIUS|禁輸|半導体規制|Supply Chain|"
-    r"CISTEC|安全保障貿易情報センター|JETRO|USCC|OFAC|DDTC|CSIS|NSA|"
-    r"MOFCOM|商務部|不可靠实体|稀土|ガリウム|ゲルマニウム)",
+    r"(中国|China|MOFCOM|商務部|不可靠实体|稀土|ガリウム|ゲルマニウム|"
+    r"輸出管理|BIS|Entity List|エンティティリスト|半導体規制|CISTEC|"
+    r"米中)",
     re.IGNORECASE,
 )
 
-# ノイズ除外パターン
+# ノイズ除外パターン（市場予測・調査レポート等を排除）
 NOISE_PATTERN = re.compile(
     r"(CAGR|年平均成長率|市場予測|市場の成長|市場シェア|詳細分析|世界市場の主要プレイヤー|"
     r"リサーチレポート|市場規模は成長を続け|プロセス液体制御|エッチングガス|圧力センサー|"
@@ -207,7 +208,7 @@ def load_existing() -> pd.DataFrame:
         return pd.DataFrame(columns=COLUMNS)
 
 def main():
-    print("指定機関・輸出管理ニュースの収集を開始します...")
+    print("中国特化・輸出管理ニュースの収集を開始します...")
     new_rows = fetch_news()
     df_new = pd.DataFrame(new_rows, columns=COLUMNS)
     df_old = load_existing()
