@@ -45,15 +45,12 @@ DIRECT_FEEDS = [
     }
 ]
 
-# ---------------------------------------------------------------
-# 中国・米中対立・対中輸出管理に特化した検索キーワード設定
-# ---------------------------------------------------------------
+# 検索キーワード設定（中国特化）
 KEYWORDS_EN = [
     "China export control", "MOFCOM export control", "Entity List China",
     "chip export controls China", "rare earth export restriction",
     "gallium germanium export", "China Unreliable Entity List",
-    "US China semiconductor restriction", "China economic security",
-    "Bureau of Industry and Security China"
+    "US China semiconductor restriction", "China economic security"
 ]
 KEYWORDS_JA = [
     "中国 輸出管理", "中国 商務部", "中国 エンティティリスト",
@@ -69,16 +66,15 @@ for kw in KEYWORDS_EN:
     QUERIES.append((f"US: {kw}", f"{kw} {SEARCH_WINDOW}", "en-US", "US", "US:en"))
 
 # ---------------------------------------------------------------
-# 中国関連または強力な輸出管理キーワードが必須の関連判定パターン
+# 【厳格化】「中国・China」または「中国特有の関連名称」が必須のパターン
 # ---------------------------------------------------------------
-SECURITY_PATTERN = re.compile(
-    r"(中国|China|MOFCOM|商務部|不可靠实体|稀土|ガリウム|ゲルマニウム|"
-    r"輸出管理|BIS|Entity List|エンティティリスト|半導体規制|CISTEC|"
-    r"米中)",
+# 国名（中国/China）が入っているか、または 商務部/MOFCOM/不可靠实体等の特有ワードが入っているものだけを許可
+CHINA_CORE_PATTERN = re.compile(
+    r"(中国|China|MOFCOM|商務部|不可靠实体|稀土|ガリウム|ゲルマニウム|CISTEC|米中)",
     re.IGNORECASE,
 )
 
-# ノイズ除外パターン（市場予測・調査レポート等を排除）
+# 市場調査・SEO自動生成記事などのノイズを除外するためのパターン
 NOISE_PATTERN = re.compile(
     r"(CAGR|年平均成長率|市場予測|市場の成長|市場シェア|詳細分析|世界市場の主要プレイヤー|"
     r"リサーチレポート|市場規模は成長を続け|プロセス液体制御|エッチングガス|圧力センサー|"
@@ -102,7 +98,8 @@ def is_relevant(entry_title: str, entry_summary: str = "") -> bool:
     text = nfkc(f"{entry_title} {entry_summary}")
     if NOISE_PATTERN.search(text):
         return False
-    return bool(SECURITY_PATTERN.search(text))
+    # 「中国」または「中国特有の重要機関・品目名」が必ず含まれていること
+    return bool(CHINA_CORE_PATTERN.search(text))
 
 def fetch_direct_sources():
     rows = []
@@ -208,7 +205,7 @@ def load_existing() -> pd.DataFrame:
         return pd.DataFrame(columns=COLUMNS)
 
 def main():
-    print("中国特化・輸出管理ニュースの収集を開始します...")
+    print("中国特化・厳格フィルターによるニュース収集を開始します...")
     new_rows = fetch_news()
     df_new = pd.DataFrame(new_rows, columns=COLUMNS)
     df_old = load_existing()
