@@ -19,18 +19,12 @@ REQUEST_INTERVAL_SEC = 0.5
 COLUMNS = ["date", "news_title", "news_source", "news_url"]
 REQUIRED_COLUMNS = ["date", "news_title", "news_source"]
 
-# 公式サイト・RSSの直接取得設定
+# CSISを除外し、より直接的な官庁・規制情報のみに絞ったダイレクトフィード設定
 DIRECT_FEEDS = [
     {
         "name": "OFAC (Recent Actions)",
         "type": "rss",
         "url": "https://ofac.treasury.gov/recent-actions.xml"
-    },
-    {
-        "name": "CSIS (Press Releases)",
-        "type": "html",
-        "url": "https://www.csis.org/about/media/press-releases",
-        "selector": "a.link, .view-content h3 a, main a"
     },
     {
         "name": "JETRO (安全保障貿易管理)",
@@ -66,15 +60,14 @@ for kw in KEYWORDS_EN:
     QUERIES.append((f"US: {kw}", f"{kw} {SEARCH_WINDOW}", "en-US", "US", "US:en"))
 
 # ---------------------------------------------------------------
-# 【厳格化】「中国・China」または「中国特有の関連名称」が必須のパターン
+# 【極限絞り込み】中国関連、または中国特有の経済安保ワードに限定
 # ---------------------------------------------------------------
-# 国名（中国/China）が入っているか、または 商務部/MOFCOM/不可靠实体等の特有ワードが入っているものだけを許可
 CHINA_CORE_PATTERN = re.compile(
-    r"(中国|China|MOFCOM|商務部|不可靠实体|稀土|ガリウム|ゲルマニウム|CISTEC|米中)",
+    r"(中国|China|MOFCOM|商務部|不可靠实体|稀土|ガリウム|ゲルマニウム|米中半導体)",
     re.IGNORECASE,
 )
 
-# 市場調査・SEO自動生成記事などのノイズを除外するためのパターン
+# 市場調査・SEO自動生成記事などのノイズを除外
 NOISE_PATTERN = re.compile(
     r"(CAGR|年平均成長率|市場予測|市場の成長|市場シェア|詳細分析|世界市場の主要プレイヤー|"
     r"リサーチレポート|市場規模は成長を続け|プロセス液体制御|エッチングガス|圧力センサー|"
@@ -98,7 +91,6 @@ def is_relevant(entry_title: str, entry_summary: str = "") -> bool:
     text = nfkc(f"{entry_title} {entry_summary}")
     if NOISE_PATTERN.search(text):
         return False
-    # 「中国」または「中国特有の重要機関・品目名」が必ず含まれていること
     return bool(CHINA_CORE_PATTERN.search(text))
 
 def fetch_direct_sources():
@@ -205,7 +197,7 @@ def load_existing() -> pd.DataFrame:
         return pd.DataFrame(columns=COLUMNS)
 
 def main():
-    print("中国特化・厳格フィルターによるニュース収集を開始します...")
+    print("中国特化・CSIS除外の厳選ニュース収集を開始します...")
     new_rows = fetch_news()
     df_new = pd.DataFrame(new_rows, columns=COLUMNS)
     df_old = load_existing()
